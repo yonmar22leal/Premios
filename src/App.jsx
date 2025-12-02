@@ -1,16 +1,16 @@
 // src/App.jsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import ProjectorView from './pages/ProjectorView.jsx';
 import VotingPage from './pages/VotingPage.jsx';
 
 function App() {
   return (
-    <BrowserRouter basename="/premios">
+    <HashRouter>
       <Routes>
         <Route path="/" element={<ProjectorView />} />
         <Route path="/votar" element={<VotingPage />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
