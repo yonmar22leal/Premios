@@ -5,7 +5,7 @@ import VotingPage from './pages/VotingPage.jsx';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/premios">
       <Routes>
         <Route path="/" element={<ProjectorView />} />
         <Route path="/votar" element={<VotingPage />} />
