@@ -2,6 +2,7 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import VotingPage from './pages/VotingPage.jsx';
 import ProjectorView from './pages/ProjectorView.jsx';
+import ControlPanel from './pages/ControlPanel.jsx';
 
 function App() {
   const search = window.location.search;
@@ -14,7 +15,9 @@ function App() {
       <HashRouter>
         <Routes>
           <Route path="/votar" element={<VotingPage />} />
+          <Route path="/control" element={<ControlPanel />} />
           <Route path="*" element={<Navigate to="/votar" replace />} />
+          
         </Routes>
       </HashRouter>
     );
@@ -26,6 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ProjectorView />} />
         <Route path="/votar" element={<VotingPage />} />
+        <Route path="/control" element={<ControlPanel />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

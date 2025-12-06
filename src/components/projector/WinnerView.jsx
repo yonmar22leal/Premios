@@ -1,31 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../services/supabase.js';
 import drumrollSfx from '../../assets/audio/drumroll.mp3';
 import winnerSfx from '../../assets/audio/winner.mp3';
 
 const WinnerView = ({ category, onBackToNominees }) => {
-  const [winners, setWinners] = useState([]);      // [{ id, name, img_url, votes }]
+  const [winners, setWinners] = useState([]);   // [{ id, name, img_url, votes }]
   const [loading, setLoading] = useState(true);
   const [isTie, setIsTie] = useState(false);
-  const [stage, setStage] = useState('counting');  // 'counting' | 'revealed'
+  const [stage, setStage] = useState('counting'); // 'counting' | 'revealed'
   const [totalVotes, setTotalVotes] = useState(0);
 
-  // 1) Traer votos y calcular ganadores
+  // para no recalcular siempre la misma categoría
+  const lastCategoryIdRef = useRef(null);
+
+  // 1) Traer votos y calcular ganadores SOLO cuando cambia de categoría
   useEffect(() => {
     if (!category) return;
+
+    // si ya calculamos esta categoría y no estamos en loading, no recalcules
+    if (lastCategoryIdRef.current === category.id && !loading) return;
 
     const fetchWinner = async () => {
       setLoading(true);
 
       const { data: votes, error: votesError } = await supabase
         .from('votes')
-        .select('nominee_id')
-        .eq('category_id', category.id);
+      .select('nominee_id')
+      .eq('category_id', category.id);
 
       if (votesError) {
-        console.error(votesError);
+        console.error('Error votes:', votesError);
         setWinners([]);
         setTotalVotes(0);
+        setIsTie(false);
         setLoading(false);
         return;
       }
@@ -33,6 +40,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
       if (!votes || votes.length === 0) {
         setWinners([]);
         setTotalVotes(0);
+        setIsTie(false);
         setLoading(false);
         return;
       }
@@ -47,7 +55,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
 
       const maxVotes = Math.max(...Object.values(counts));
       const winnerIds = Object.entries(counts)
-        .filter(([id, count]) => count === maxVotes)
+        .filter(([, count]) => count === maxVotes)
         .map(([id]) => Number(id));
 
       setIsTie(winnerIds.length > 1);
@@ -58,7 +66,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
         .in('id', winnerIds);
 
       if (nomineesError) {
-        console.error(nomineesError);
+        console.error('Error nominees:', nomineesError);
         setWinners([]);
         setLoading(false);
         return;
@@ -70,18 +78,19 @@ const WinnerView = ({ category, onBackToNominees }) => {
       }));
 
       setWinners(withCounts);
+      lastCategoryIdRef.current = category.id; // marcamos la categoría como calculada
       setLoading(false);
     };
 
     fetchWinner();
-  }, [category]);
+  }, [category]); // se ejecuta cuando cambia la referencia de category
 
-  // 2) Sonidos + cambio de etapa
+  // 2) Sonidos + cambio de etapa, solo cuando ya hay winners nuevos
   useEffect(() => {
     if (loading) return;
     if (!winners || winners.length === 0) return;
 
-    // Etapa inicial: contando votos con redoble
+    // etapa inicial: contando votos con redoble
     setStage('counting');
 
     const drum = new Audio(drumrollSfx);
@@ -91,7 +100,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
       const win = new Audio(winnerSfx);
       win.play().catch(() => {});
       setStage('revealed');
-    }, 5000); // 4s de redoble, ajusta a gusto
+    }, 5000); // 5s de redoble
 
     return () => clearTimeout(t);
   }, [loading, winners]);
@@ -131,7 +140,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
     <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-black text-white flex flex-col items-center justify-center relative overflow-hidden">
       {/* Luces/fondo opcional */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.35),transparent),radial-gradient(circle_at_bottom,rgba(56,189,248,0.35),transparent)] opacity-80" />
-
+      
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-4xl">
         <p className="text-sm md:text-base uppercase tracking-[0.4em] text-slate-200/80 mb-3">
           {stage === 'revealed'

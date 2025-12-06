@@ -16,23 +16,25 @@ const VotingPage = () => {
   const [message, setMessage] = useState('');
   const [alreadyVoted, setAlreadyVoted] = useState(false);
 
-  // cargar categorías (igual que antes)
+  // cargar categorías
   useEffect(() => {
     const fetchCategories = async () => {
       setLoadingCategories(true);
+
       const { data, error } = await supabase
         .from('categories')
         .select('*')
         .order('id', { ascending: true });
 
-      if (!error && data) {
+      if (!error && data && data.length > 0) {
         setCategories(data);
-        if (data.length > 0) {
-          const firstId = data[0].id;
-          setSelectedCategoryId(firstId);
-          setAlreadyVoted(hasVotedCategory(firstId));
-        }
+        const firstId = data[0].id;
+        setSelectedCategoryId(firstId);
+        setAlreadyVoted(hasVotedCategory(firstId));
+      } else {
+        setCategories([]);
       }
+
       setLoadingCategories(false);
     };
 
@@ -89,7 +91,7 @@ const VotingPage = () => {
   const handleVote = async (nomineeId) => {
     if (!selectedCategoryId) return;
 
-    // 1) revisar cache local
+    // revisar cache local
     if (hasVotedCategory(selectedCategoryId)) {
       setAlreadyVoted(true);
       setMessage('Ya registraste tu voto en esta categoría.');
@@ -113,7 +115,7 @@ const VotingPage = () => {
       return;
     }
 
-    // 2) marcar en cache que ya votó en esta categoría
+    // marcar en cache que ya votó en esta categoría
     markCategoryVoted(selectedCategoryId);
     setAlreadyVoted(true);
     setMessage('¡Voto registrado! Gracias por participar.');
@@ -143,7 +145,8 @@ const VotingPage = () => {
             Categoría
           </label>
 
-          {loadingCategories ? (
+          {/* CAMBIO: solo mostramos "Cargando..." si aún no hay categoría seleccionada */}
+          {loadingCategories && !selectedCategoryId ? (
             <p className="text-slate-300">Cargando categorías...</p>
           ) : (
             <select
