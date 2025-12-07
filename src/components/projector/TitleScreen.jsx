@@ -1,8 +1,9 @@
+
 const TitleScreen = ({ onStart }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 overflow-hidden relative flex items-center justify-center">
+    <div className="min-h-screen via-blue-900 to-indigo-900 overflow-hidden relative flex items-center justify-center">
       {/* Fondo de luces espectáculo */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(120,119,198,0.4),transparent),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.25),transparent),radial-gradient(circle_at_40%_40%,rgba(56,189,248,0.25),transparent)] animate-pulse-slow pointer-events-none" />
+      <div className="absolute inset-0 animate-pulse-slow pointer-events-none" />
 
       {/* Contenido principal */}
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4">
@@ -18,15 +19,6 @@ const TitleScreen = ({ onStart }) => {
           Noche de reconocimientos, celebración y talentos destacados.
         </p>
 
-        <button
-          onClick={onStart}
-          className="mt-10 px-10 py-4 rounded-2xl text-lg sm:text-2xl font-semibold text-white
-                     bg-white/15 border border-white/40 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.6)]
-                     hover:bg-white/25 hover:scale-105 active:scale-95 transition-all duration-200
-                     flex items-center gap-2"
-        >
-          Iniciar Premios ✨
-        </button>
       </div>
     </div>
   );

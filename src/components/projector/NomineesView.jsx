@@ -31,7 +31,7 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
 
   // 4) Nominados listos (no hay loading ni re-fetch aquí)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col">
+    <div className="min-h-screen from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col">
       <header className="px-8 pt-6 pb-4 flex items-center justify-between">
         <div>
           <p className="text-sm tracking-[0.35em] text-slate-300/70 uppercase">

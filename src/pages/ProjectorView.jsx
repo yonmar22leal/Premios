@@ -73,13 +73,10 @@ const ProjectorView = () => {
         loadCategoryName(current_category_id).catch((e) => console.warn('loadCategoryName error', e));
       }
 
-      if (current_view === 'nominees' && current_category_id) {
-        // solo si cambió de categoría recargamos nominados
-        if (current_category_id !== lastCategoryRef.current) {
-          lastCategoryRef.current = current_category_id;
-          await loadNominees(current_category_id);
-        }
-        // si es la misma categoría, mantenemos los nominees actuales
+      if ((current_view === 'nominees' || current_view === 'voting') && current_category_id) {
+        // cargamos siempre (loadNominees hace uso de cache para evitar múltiples fetches)
+        lastCategoryRef.current = current_category_id;
+        await loadNominees(current_category_id);
       } else {
         // si ya no estamos en voting, dejamos nominees como están o los ponemos null
         setNominees(null);
@@ -180,10 +177,28 @@ const ProjectorView = () => {
 
   if (current_view === 'title') return <TitleScreen />;
   if (current_view === 'category') {
-    return <CategoriesView categoryId={current_category_id} />;
+    // If a specific category is selected, show a big title screen for it.
+    if (current_category_id) {
+      const cat = cacheRef.current.categories[current_category_id];
+      if (!cat) {
+        return (
+          <div className="min-h-screen bg-black text-white flex items-center justify-center">
+            <p className="text-2xl">Cargando categoría...</p>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen via-slate-900 to-black text-white flex flex-col items-center justify-center">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-yellow-300 mb-4">{cat.name}</h1>
+          <p className="text-xl text-slate-300">Preparando los nominados...</p>
+        </div>
+      );
+    }
+
+    return <CategoriesView />;
   }
 
-  // ojo: aquí uso 'voting' porque es como lo tenías en supabase
   if (current_view === 'nominees' || current_view === 'voting') {
     const cat = cacheRef.current.categories[current_category_id] || { id: current_category_id, name: `Categoría ${current_category_id}` };
     return (
@@ -194,7 +209,7 @@ const ProjectorView = () => {
     );
   }
 
-  if (current_view === 'results') {
+  if (current_view === 'results' || current_view === 'winner') {
     const cat = cacheRef.current.categories[current_category_id] || { id: current_category_id, name: `Categoría ${current_category_id}` };
     return (
       <WinnerView

@@ -77,18 +77,22 @@ const ControlPanel = () => {
       )
       .subscribe();
 
-    const controlChan = supabase.channel('presentation_control');
-    controlChan.subscribe().then(() => {
-      console.log('[ControlPanel] control channel subscribed');
-    }).catch((e) => console.warn('[ControlPanel] control channel subscribe error', e));
+    const controlChan = supabase
+    .channel('presentation_control')
+    .on('broadcast', { event: 'refresh' }, (payload) => {
+      // tu lógica cuando llega el evento
+      console.log('REFRESH recibido', payload);
+      // por ejemplo: fetchState();
+    })
+    .subscribe((status) => {
+      console.log('Estado canal control:', status);
+      // status puede ser 'SUBSCRIBED', 'CLOSED', etc.
+    });
 
-    channel._controlChan = controlChan;
-
-    return () => {
-      try { supabase.removeChannel(channel); } catch (e) {}
-      try { supabase.removeChannel(controlChan); } catch (e) {}
-    };
-  }, []);
+  return () => {
+    supabase.removeChannel(controlChan);
+  };
+}, []);
 
   const updateState = async (patch) => {
     if (!state) return;
@@ -178,18 +182,26 @@ const ControlPanel = () => {
             {/* 2. Categorías */}
             <div>
               <h3 className="text-md font-semibold mb-4 text-yellow-200">📂 Categorías disponibles:</h3>
+              <div className="flex gap-3 mb-3">
+                <button
+                  onClick={() => updateState({ current_view: 'category', current_category_id: null })}
+                  className={`px-4 py-2 rounded-lg text-sm bg-white/5 border hover:bg-white/10`}
+                >
+                  Ver todas las categorías
+                </button>
+              </div>
               <div className="flex flex-wrap gap-3">
                 {categories.map((cat) => (
                   <button 
                     key={cat.id}
-                    onClick={() => updateState({ current_view: 'categories', current_category_id: cat.id })}
+                    onClick={() => updateState({ current_view: 'category', current_category_id: cat.id })}
                     className={`px-4 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                      String(current_category_id) === String(cat.id) && current_view === 'categories'
+                      String(current_category_id) === String(cat.id) && (current_view === 'voting' || current_view === 'nominees')
                         ? 'bg-emerald-500 text-black border-emerald-400 shadow-lg shadow-emerald-500/25 scale-105'
                         : 'bg-white/5 border-white/20 text-white/90 hover:bg-white/10 hover:border-white/40 hover:scale-105'
                     }`}
                   >
-                    {cat.name || cat.title || cat.display_name || `Cat ${cat.id}`}
+                    {cat.name || cat.nombre || cat.title || cat.display_name || `Cat ${cat.id}`}
                   </button>
                 ))}
               </div>
@@ -215,9 +227,9 @@ const ControlPanel = () => {
             {current_category_id && (
               <div className="flex items-center gap-4">
                 <button 
-                  onClick={() => updateState({ current_view: 'winner', current_category_id })}
+                  onClick={() => updateState({ current_view: 'results', current_category_id })}
                   className={`px-6 py-3 rounded-xl text-lg font-semibold border-2 flex-1 transition-all ${
-                    current_view === 'winner'
+                    current_view === 'results'
                       ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-purple-400 shadow-lg shadow-purple-500/25'
                       : 'bg-white/5 border-transparent text-white/90 hover:bg-white/10'
                   }`}

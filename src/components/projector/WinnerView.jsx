@@ -137,7 +137,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
       : 'Y el ganador es...';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-slate-900 to-black text-white flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen via-slate-900 to-black text-white flex flex-col items-center justify-center relative overflow-hidden">
       {/* Luces/fondo opcional */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.35),transparent),radial-gradient(circle_at_bottom,rgba(56,189,248,0.35),transparent)] opacity-80" />
       
@@ -199,12 +199,6 @@ const WinnerView = ({ category, onBackToNominees }) => {
           </div>
         )}
 
-        <button
-          onClick={onBackToNominees}
-          className="mt-10 px-6 py-3 rounded-2xl bg-white/10 border border-white/30 text-sm md:text-base hover:bg-white/20 transition"
-        >
-          Volver a nominados
-        </button>
       </div>
 
       {/* Overlay central durante el redoble */}

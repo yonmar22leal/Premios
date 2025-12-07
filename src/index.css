@@ -3,3 +3,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+.snow-container {
+  position: relative;
+}
+.snow-container::before,
+.snow-container::after,
+.snow-container > * {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: snowfall linear infinite;
+}
+.snow-container::before { width: 3px; height: 3px; left: 10%; animation-duration: 12s; }
+.snow-container::after { width: 5px; height: 5px; left: 70%; animation-duration: 15s; animation-delay: 2s; }
+@keyframes snowfall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}

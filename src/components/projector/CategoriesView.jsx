@@ -34,7 +34,7 @@ const CategoriesView = ({ onBack, onSelectCategory }) => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col">
+    <div className="min-h-screen via-slate-900 to-slate-800 text-white flex flex-col">
       <header className="px-8 pt-6 pb-4 flex items-center justify-between">
         <div>
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-[0.2em] text-yellow-300 drop-shadow">

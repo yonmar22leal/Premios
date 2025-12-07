@@ -3,6 +3,8 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import VotingPage from './pages/VotingPage.jsx';
 import ProjectorView from './pages/ProjectorView.jsx';
 import ControlPanel from './pages/ControlPanel.jsx';
+import ChristmasLayout from './components/ChristmasLayout.jsx';
+
 
 function App() {
   const search = window.location.search;
@@ -14,10 +16,11 @@ function App() {
     return (
       <HashRouter>
         <Routes>
-          <Route path="/votar" element={<VotingPage />} />
-          <Route path="/control" element={<ControlPanel />} />
-          <Route path="*" element={<Navigate to="/votar" replace />} />
-          
+          <Route element={<ChristmasLayout />}>
+            <Route path="/votar" element={<VotingPage />} />
+            <Route path="/control" element={<ControlPanel />} />
+            <Route path="*" element={<Navigate to="/votar" replace />} />
+          </Route>
         </Routes>
       </HashRouter>
     );
@@ -27,10 +30,12 @@ function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<ProjectorView />} />
-        <Route path="/votar" element={<VotingPage />} />
-        <Route path="/control" element={<ControlPanel />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route element={<ChristmasLayout />}>
+          <Route path="/" element={<ProjectorView />} />
+          <Route path="/votar" element={<VotingPage />} />
+          <Route path="/control" element={<ControlPanel />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Routes>
     </HashRouter>
   );
