@@ -34,53 +34,49 @@ const CategoriesView = ({ onBack, onSelectCategory }) => {
   }
 
   return (
-    <div className="min-h-screen via-slate-900 to-slate-800 text-white flex flex-col">
-      <header className="px-8 pt-6 pb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-[0.2em] text-yellow-300 drop-shadow">
-            PREMIOS IEC 2025
-          </h1>
-          <p className="text-slate-200/80 mt-1">
-            Categorías de la noche de premiación
-          </p>
-        </div>
-
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="px-4 py-2 rounded-xl bg-white/10 border border-white/30 text-sm md:text-base hover:bg-white/20 transition"
-          >
-            Volver al inicio
-          </button>
-        )}
+    <div className="min-h-screen bg-[url('/images/2.png')] bg-cover bg-center via-slate-900 to-slate-800 text-white flex flex-col">
+      {/* HEADER CENTRADO Y MÁS GRANDE */}
+      <header className="px-8 pt-6 pb-6 flex flex-col items-center text-center">
+        <p className="text-2xl md:text-4xl lg:text-5xl font-extrabold tracking-[0.3em] text-yellow-100 drop-shadow-2xl mb-2 font-sans">
+          CATEGORIA DE LA NOCHE
+        </p>
+        <p className="text-lg md:text-xl text-slate-200/90 font-light tracking-wide font-sans">
+          PREMIACION IEC 2025
+        </p>
       </header>
 
+      {/* BOTÓN VOLVER (solo si existe) */}
+      {onBack && (
+        <div className="px-8 pb-4 flex justify-center">
+          <button
+            onClick={onBack}
+            className="px-6 py-3 rounded-xl bg-white/10 border border-white/30 text-base md:text-lg hover:bg-white/20 transition-all duration-200 shadow-lg"
+          >
+            ← Volver al inicio
+          </button>
+        </div>
+      )}
+
       <main className="flex-1 px-6 md:px-12 pb-10 flex items-center justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 w-full max-w-6xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 w-full max-w-7xl">
           {categories.map((cat, index) => (
             <button
               key={cat.id}
               onClick={() => onSelectCategory?.(cat)}
-              className="group relative overflow-hidden rounded-3xl bg-white/5 border border-white/10 
-                         hover:bg-white/10 hover:border-yellow-400/60 transition-all duration-200
-                         shadow-[0_0_30px_rgba(0,0,0,0.6)] text-left p-6 md:p-7 flex flex-col justify-between"
+              className="group relative overflow-hidden rounded-3xl bg-white/8 border-2 border-white/20 
+                         hover:bg-white/15 hover:border-yellow-400/70 transition-all duration-300
+                         shadow-[0_10px_40px_rgba(0,0,0,0.7)] text-left p-8 md:p-10 flex flex-col justify-between h-64 md:h-72"
             >
-              <span className="text-6xl md:text-7xl font-black text-slate-800/40 group-hover:text-yellow-500/20 absolute -top-4 -right-2">
+              {/* NÚMERO EN LA ESQUINA - MÁS GRANDE */}
+              <span className="text-5xl md:text-6xl lg:text-7xl font-black text-slate-800/30 group-hover:text-yellow-100 absolute -top-6 -right-4 scale-110">
                 {(index + 1).toString().padStart(2, '0')}
               </span>
 
-              <div className="relative z-10">
-                <h2 className="text-xl md:text-2xl font-bold text-yellow-300 drop-shadow mb-2">
+              <div className="relative z-10 flex flex-col justify-between h-full">
+                {/* TÍTULO DE CATEGORÍA - MUCHO MÁS GRANDE */}
+                <h2 className="[-webkit-text-stroke:2px_rgba(0,0,0,0.8)] text-3xl md:text-4xl lg:text-5xl font-black text-yellow-100/95 drop-shadow-2xl mb-4 leading-tight font-sans">
                   {cat.name}
                 </h2>
-                <p className="text-sm md:text-base text-slate-100/85">
-                  {cat.description}
-                </p>
-              </div>
-
-              <div className="relative z-10 mt-4 flex items-center gap-2 text-sm text-slate-200/90">
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Listo para presentar</span>
               </div>
             </button>
           ))}

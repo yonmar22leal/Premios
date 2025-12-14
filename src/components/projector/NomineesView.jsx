@@ -23,49 +23,33 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
   // 3) Sin nominados para esa categoría
   if (nominees.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center ">
         <p className="text-xl mb-2">No hay nominados asignados a esta categoría.</p>
       </div>
     );
   }
 
-  // 4) Nominados listos (no hay loading ni re-fetch aquí)
+  // 4) Nominados listos
   return (
-    <div className="min-h-screen from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col">
-      <header className="px-8 pt-6 pb-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm tracking-[0.35em] text-slate-300/70 uppercase">
-            Categoría
-          </p>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-yellow-300 drop-shadow">
-            {category.name}
-          </h1>
-          <p className="text-slate-200/80 mt-1">
-            Nominados oficiales para esta categoría.
-          </p>
-        </div>
+    <div className="min-h-screen from-slate-950 via-slate-900 to-slate-800 text-white flex flex-col bg-[url('/images/2.png')] bg-cover">
+      {/* HEADER CENTRADO Y MÁS ABAJO */}
+      <header className=" px-6 md:px-8 pt-24 pb-8 flex flex-col items-center text-center">
+        <p className="text-sm tracking-[0.35em]  uppercase text-4xl md:text-4xl font-medium font-sans">
+          Premio
+        </p>
 
-        <div className="flex gap-3">
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="px-4 py-2 rounded-xl bg-white/10 border border-white/30 text-sm md:text-base hover:bg-white/20 transition"
-            >
-              Volver a categorías
-            </button>
-          )}
-          {onShowWinner && nominees.length > 0 && (
-            <button
-              onClick={onShowWinner}
-              className="px-4 py-2 rounded-xl bg-emerald-500 text-sm md:text-base font-semibold hover:bg-emerald-400 transition shadow-lg"
-            >
-              Revelar ganador
-            </button>
-          )}
-        </div>
+        <h1 className="text-4xl md:text-8xl font-extrabold text-[#eccf58] drop-shadow mt-4 font-sans">
+          {category.name}
+        </h1>
+
+        <p className="text-slate-200/80 mt-2 text-4xl md:text-4xl font-medium max-w-3xl font-sans">
+          Nominados oficiales para esta categoría.
+        </p>
+
       </header>
 
-      <main className="flex-1 px-6 md:px-12 pb-10 flex items-center justify-center">
+      {/* LISTA DE NOMINADOS */}
+      <main className="flex-1 px-6 md:px-12 pb-10 flex items-center justify-center mt-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
           {nominees.map((nominee) => (
             <div
@@ -74,21 +58,22 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
                          hover:bg-white/10 hover:border-yellow-400/60 transition-all duration-200
                          shadow-[0_0_30px_rgba(0,0,0,0.6)] flex flex-col items-center p-6"
             >
-              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-yellow-400/70 shadow-lg mb-4">
+              <div className="font-size 800 w-32 h-32 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-yellow-400/70 shadow-lg mb-4">
                 <img
                   src={nominee.img_url}
                   alt={nominee.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover "
                 />
               </div>
 
-              <h2 className="text-xl md:text-2xl font-bold text-yellow-200 text-center">
+              <h2 className="[-webkit-text-stroke:2px_rgba(0,0,0,0.8)] text-4xl md:text-4xl font-bold text-center font-sans drop-shadow-lg shadow-black ">
                 {nominee.name}
               </h2>
             </div>
           ))}
         </div>
       </main>
+      asdasd
     </div>
   );
 };

@@ -129,75 +129,64 @@ const WinnerView = ({ category, onBackToNominees }) => {
     );
   }
 
-  const titleText =
-    stage === 'counting'
-      ? 'Contando los votos...'
-      : isTie
-      ? '¡Es un empate!'
-      : 'Y el ganador es...';
-
   return (
-    <div className="min-h-screen via-slate-900 to-black text-white flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen via-slate-900 bg-[url('/images/2.png')] bg-cover to-black text-white flex flex-col items-center justify-center relative overflow-hidden">
       {/* Luces/fondo opcional */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(250,204,21,0.35),transparent),radial-gradient(circle_at_bottom,rgba(56,189,248,0.35),transparent)] opacity-80" />
       
       <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-4xl">
-        <p className="text-sm md:text-base uppercase tracking-[0.4em] text-slate-200/80 mb-3">
-          {stage === 'revealed'
-            ? isTie
-              ? '¡Es un empate!'
-              : 'Y el ganador es...'
-            : ''} {/* vacío mientras cuenta */}
-        </p>
 
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-yellow-300 drop-shadow mb-6">
-          {category.name}
-        </h1>
-
-        {/* Ganadores SOLO cuando ya se reveló */}
         {stage === 'revealed' && (
-          <div className="flex flex-wrap justify-center gap-8 mt-4">
-            {winners.map((winner) => {
-              const percentage =
-                totalVotes > 0
-                  ? Math.round((winner.votes / totalVotes) * 100)
-                  : 0;
+          <div className="flex flex-col items-center justify-center mt-8 text-center animate-fadeIn mb-16">
+            
+            {/* ÚNICO MENSAJE: depende de si hay empate */}
+            <div className="mb-10">
+              {isTie ? (
+                <p className="text-4xl md:text-6xl font-extrabold text-yellow-300 drop-shadow-[0_0_20px_rgba(56,189,248,0.9)] mb-10">
+                  ¡ES UN EMPATE!
+                </p>
+              ) : (
+                <p className="text-4xl md:text-6xl font-extrabold text-yellow-300 drop-shadow-[0_0_25px_rgba(250,204,21,0.9)] animate-bounce">
+                  🎉 ¡Y EL GANADOR ES! 🎉
+                </p>
+              )}
+            </div>
 
-              return (
-                <div
-                  key={winner.id}
-                  className="flex flex-col items-center transition-all duration-700"
-                >
-                  <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-[6px] border-yellow-300 shadow-[0_0_40px_rgba(250,204,21,0.9)] mb-4">
-                    <img
-                      src={winner.img_url}
-                      alt={winner.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+            {/* Ganadores */}
+            <div className="flex flex-wrap justify-center gap-12">
+              {winners.map((winner) => {
+                const percentage =
+                  totalVotes > 0
+                    ? Math.round((winner.votes / totalVotes) * 100)
+                    : 0;
 
-                  <h2 className="text-xl md:text-2xl font-extrabold text-white">
-                    {winner.name}
-                  </h2>
-
-                  {/* Mini gráfica de votos */}
-                  <div className="mt-3 w-44">
-                    <div className="flex justify-between text-xs text-slate-300 mb-1">
-                      <span>{winner.votes} votos</span>
-                      <span>{percentage}%</span>
-                    </div>
-                    <div className="h-2 w-full bg-slate-800/80 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-yellow-400 via-amber-300 to-emerald-400"
-                        style={{ width: `${percentage}%` }}
+                return (
+                  <div
+                    key={winner.id}
+                    className="flex flex-col items-center text-center transform transition-all duration-700 scale-110 md:scale-125"
+                  >
+                    <div className="relative w-52 h-52 md:w-72 md:h-72 rounded-full overflow-hidden border-[10px] border-yellow-400 shadow-[0_0_60px_rgba(250,204,21,1)] mb-6">
+                      <img
+                        src={winner.img_url}
+                        alt={winner.name}
+                        className="w-full h-full object-cover"
                       />
                     </div>
+
+                    <h2 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg font-sans">
+                      {winner.name}
+                    </h2>
+                    <div className="mt-3 text-xl md:text-2xl text-yellow-100 font-semibold font-sans">
+                      {winner.votes} votos — {percentage}%
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
+
+
 
       </div>
 

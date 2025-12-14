@@ -1,35 +1,69 @@
-// ProjectorView.jsx - estable, sin parpadeos
+// ProjectorView.jsx - VERSIÓN CORREGIDA Y COMPLETA
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../services/supabase.js';
 import TitleScreen from '../components/projector/TitleScreen.jsx';
 import CategoriesView from '../components/projector/CategoriesView.jsx';
 import NomineesView from '../components/projector/NomineesView.jsx';
 import WinnerView from '../components/projector/WinnerView.jsx';
+import PresentationView from '../components/projector/PresentationView.jsx';
 
 const ProjectorView = () => {
   const [state, setState] = useState(null);
   const [loading, setLoading] = useState(true);
   const [nominees, setNominees] = useState(null); // null = aún no cargados, [] = cargados vacío
+  const [remotePresentation, setRemotePresentation] = useState(null);
 
   const cacheRef = useRef({});
   const lastCategoryRef = useRef(null);
 
-  // asegurarnos de tener cache para categories
+  // Cache inicial para categories
   if (!cacheRef.current.categories) cacheRef.current.categories = {};
 
-  // fetch inicial
+  // Fetch inicial
   useEffect(() => {
     fetchState(true);
   }, []);
 
-  // broadcast + polling (sin tocar loading)
+  // Broadcast + polling
   useEffect(() => {
-    const channel = supabase
-      .channel('presentation_control')
-      .on('broadcast', { event: 'refresh' }, () => {
-        fetchState(false);
-      })
-      .subscribe();
+    const channel = supabase.channel('presentation_control');
+
+    // Refresh events
+    channel.on('broadcast', { event: 'refresh' }, () => {
+      console.log('[ProjectorView] refresh recibido');
+      fetchState(false);
+    });
+
+    // ✅ PRESENT_NOMINEE CORREGIDO - Parsing simple y directo
+    channel.on('broadcast', { event: 'present_nominee' }, (payload) => {
+      console.log('[ProjectorView] present_nominee recibido:', payload);
+      
+      try {
+        let nominee = null;
+        
+        // Caso 1: httpSend('present_nominee', { nominee: {...} })
+        if (payload.nominee) {
+          nominee = payload.nominee;
+        }
+        // Caso 2: send({ type: 'broadcast', event: 'present_nominee', payload: { nominee: {...} } })
+        else if (payload.payload?.nominee) {
+          nominee = payload.payload.nominee;
+        }
+        
+        console.log('[ProjectorView] nominee extraído:', nominee);
+        
+        if (nominee && nominee.video_url) {
+          console.log('[ProjectorView] Mostrando presentación:', nominee.video_url);
+          setRemotePresentation(nominee);
+        } else {
+          console.warn('[ProjectorView] No hay video_url válido:', nominee?.video_url);
+        }
+      } catch (e) {
+        console.error('[ProjectorView] Error parsing nominee:', e, payload);
+      }
+    });
+
+    channel.subscribe();
 
     const interval = setInterval(() => {
       fetchState(false);
@@ -57,7 +91,7 @@ const ProjectorView = () => {
         return;
       }
 
-      // si no cambió nada, no hacemos nada
+      // Evitar re-renders innecesarios
       if (JSON.stringify(stateData) === JSON.stringify(state)) {
         if (isInitial) setLoading(false);
         return;
@@ -65,20 +99,17 @@ const ProjectorView = () => {
 
       setState(stateData);
 
-      // si cambia de vista o categoría, decidimos qué hacer con nominados
       const { current_view, current_category_id } = stateData;
 
-      // cargar nombre de categoría en cache si no lo tenemos
+      // Cachear nombre de categoría
       if (current_category_id && !cacheRef.current.categories[current_category_id]) {
         loadCategoryName(current_category_id).catch((e) => console.warn('loadCategoryName error', e));
       }
 
       if ((current_view === 'nominees' || current_view === 'voting') && current_category_id) {
-        // cargamos siempre (loadNominees hace uso de cache para evitar múltiples fetches)
         lastCategoryRef.current = current_category_id;
         await loadNominees(current_category_id);
       } else {
-        // si ya no estamos en voting, dejamos nominees como están o los ponemos null
         setNominees(null);
       }
 
@@ -90,7 +121,6 @@ const ProjectorView = () => {
   };
 
   const loadNominees = async (categoryId) => {
-    // cache
     if (cacheRef.current[categoryId]) {
       setNominees(cacheRef.current[categoryId]);
       return;
@@ -119,7 +149,7 @@ const ProjectorView = () => {
 
       const { data: nomineesData, error: nomineesError } = await supabase
         .from('nominees')
-        .select('id, name, img_url')
+        .select('id, name, img_url, video_url')
         .in('id', nomineeIds);
 
       if (nomineesError) {
@@ -140,7 +170,6 @@ const ProjectorView = () => {
   };
 
   const loadCategoryName = async (categoryId) => {
-    // revisar cache
     if (cacheRef.current.categories[categoryId]) return cacheRef.current.categories[categoryId];
 
     try {
@@ -175,9 +204,25 @@ const ProjectorView = () => {
 
   const { current_view, current_category_id } = state;
 
+  // ✅ PRIORIDAD 1: Remote presentation (interrumpe todo)
+  if (remotePresentation) {
+    console.log('[ProjectorView] Renderizando PresentationView');
+    return (
+      <PresentationView
+        nominee={remotePresentation}
+        onEnd={() => {
+          console.log('[ProjectorView] Presentation terminada');
+          setRemotePresentation(null);
+        }}
+      />
+    );
+  }
+
+  // Vista título
   if (current_view === 'title') return <TitleScreen />;
+
+  // Vista categorías
   if (current_view === 'category') {
-    // If a specific category is selected, show a big title screen for it.
     if (current_category_id) {
       const cat = cacheRef.current.categories[current_category_id];
       if (!cat) {
@@ -189,35 +234,41 @@ const ProjectorView = () => {
       }
 
       return (
-        <div className="min-h-screen via-slate-900 to-black text-white flex flex-col items-center justify-center">
-          <h1 className="text-5xl md:text-7xl font-extrabold text-yellow-300 mb-4">{cat.name}</h1>
-          <p className="text-xl text-slate-300">Preparando los nominados...</p>
+        <div className="min-h-screen bg-[url('/images/3.png')] bg-cover bg-center via-slate-900 to-black text-white flex flex-col items-center justify-center">
+          <h1 className="text-10xl md:text-9xl font-extrabold text-[#eccf58] mb-4 drop-shadow-2xl font-sans [-webkit-text-stroke:2px_rgba(0,0,0,0.8)] text-center mt-20">
+            {cat.name}
+          </h1>
+          <p className="text-4xl text-slate-300"></p>
         </div>
       );
     }
-
     return <CategoriesView />;
   }
 
+  // Vista nominados/votación
   if (current_view === 'nominees' || current_view === 'voting') {
-    const cat = cacheRef.current.categories[current_category_id] || { id: current_category_id, name: `Categoría ${current_category_id}` };
+    const cat = cacheRef.current.categories[current_category_id] || { 
+      id: current_category_id, 
+      name: `Categoría ${current_category_id}` 
+    };
     return (
       <NomineesView
         category={cat}
-        nominees={nominees} // null = loading, [] o array = listo
+        nominees={nominees}
       />
     );
   }
 
+  // Vista ganador
   if (current_view === 'results' || current_view === 'winner') {
-    const cat = cacheRef.current.categories[current_category_id] || { id: current_category_id, name: `Categoría ${current_category_id}` };
-    return (
-      <WinnerView
-        category={cat}
-      />
-    );
+    const cat = cacheRef.current.categories[current_category_id] || { 
+      id: current_category_id, 
+      name: `Categoría ${current_category_id}` 
+    };
+    return <WinnerView category={cat} />;
   }
 
+  // Fallback
   return <TitleScreen />;
 };
 

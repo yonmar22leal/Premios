@@ -28,7 +28,7 @@ const ChristmasLayout = () => {
 
     function drawSnowflakes() {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = 'white';
+      ctx.fillStyle = '#dcb157';
       ctx.beginPath();
       for (const flake of snowflakes) {
         ctx.globalAlpha = flake.opacity;
@@ -77,9 +77,9 @@ const ChristmasLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-900 via-green-900/50 to-emerald-900 overflow-hidden relative">
+    <div className="min-h-screen overflow-hidden relative">
       {/* Fondo imagen */}
-      <div className="absolute inset-0 bg-[url('/images/1.png')] bg-cover bg-center brightness-50" />
+      <div className="absolute inset-0 bg-[url('/images/5.png')] bg-cover bg-center" />
 
       {/* Canvas para nieve */}
       <canvas
@@ -89,7 +89,7 @@ const ChristmasLayout = () => {
       />
 
       {/* Luces navideñas */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_80%,rgba(255,215,0,0.2),transparent),radial-gradient(circle_at_80%_20%,rgba(255,0,0,0.2),transparent)] animate-pulse-slow pointer-events-none" />
+      <div className="absolute inset-0 animate-pulse-slow pointer-events-none" />
 
       {/* Contenido de cualquier ruta */}
       <div className="relative z-10 min-h-screen">
