@@ -38,6 +38,7 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
     if (count === 3) return 'grid grid-cols-3 gap-6 md:gap-8 justify-items-center';
     if (count === 4) return 'grid grid-cols-4 gap-6 md:gap-8 justify-items-center';
     if (count === 5) return 'grid grid-cols-5 gap-6 md:gap-8 justify-items-center';
+    if (count === 6) return 'grid grid-cols-6 md:grid-cols-6 gap-6 md:gap-8 justify-items-center';
     
     // Para otros números: grid cuadrado
     const cols = Math.ceil(Math.sqrt(count));
@@ -54,6 +55,10 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
     if (count === 4 || count === 5) {
       // 4 y 5 → un toque más pequeñas que antes
       return `w-28 h-28 md:w-65 md:h-85 rounded-full overflow-hidden border-4 border-yellow-400/70 shadow-lg mb-3`;
+    }
+    if (count === 6) { 
+      // 6 un toque más pequeñas que antes
+      return `w-30 h-30 md:w-40 md:h-50 rounded-full overflow-hidden border-4 border-yellow-400/70 shadow-lg mb-3`;
     }
     // resto igual que antes
     return `w-32 h-32 md:w-80 md:h-80 rounded-full overflow-hidden border-4 border-yellow-400/70 shadow-lg mb-4`;
@@ -101,7 +106,7 @@ const NomineesView = ({ category, nominees, onBack, onShowWinner }) => {
                 <img
                   src={nominee.img_url}
                   alt={nominee.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full"
                 />
               </div>
 

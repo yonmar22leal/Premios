@@ -1,4 +1,4 @@
-const VOTED_KEY = 'iec_voted';
+const VOTED_KEY = 'iec_voted1';
 
 export const getVotedCategories = () => {
   try {
