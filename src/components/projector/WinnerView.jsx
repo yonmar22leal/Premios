@@ -9,24 +9,72 @@ const WinnerView = ({ category, onBackToNominees }) => {
   const [isTie, setIsTie] = useState(false);
   const [stage, setStage] = useState('counting'); // 'counting' | 'revealed'
   const [totalVotes, setTotalVotes] = useState(0);
+  const [onlyOneNominee, setOnlyOneNominee] = useState(false);
 
   // para no recalcular siempre la misma categoría
   const lastCategoryIdRef = useRef(null);
 
-  // 1) Traer votos y calcular ganadores SOLO cuando cambia de categoría
+  // 1) Verificar nominados y votos SOLO cuando cambia de categoría
   useEffect(() => {
     if (!category) return;
 
     // si ya calculamos esta categoría y no estamos en loading, no recalcules
     if (lastCategoryIdRef.current === category.id && !loading) return;
 
-    const fetchWinner = async () => {
+    const checkCategory = async () => {
       setLoading(true);
 
+      // *** PRIMERO: Verificar cuántos nominados hay en esta categoría ***
+      const { data: nomineeJoins, error: joinsError } = await supabase
+        .from('nominee_categories')
+        .select('nominee_id')
+        .eq('category_id', category.id);
+
+      if (joinsError) {
+        console.error('Error nominee_categories:', joinsError);
+        setLoading(false);
+        return;
+      }
+
+      const nomineeCount = nomineeJoins?.length || 0;
+      setOnlyOneNominee(nomineeCount === 1);
+
+      if (nomineeCount === 0) {
+        setWinners([]);
+        setLoading(false);
+        return;
+      }
+
+      // *** SI HAY SOLO 1 NOMINADO: Mostrarlo inmediatamente SIN contar votos ***
+      if (nomineeCount === 1) {
+        const nomineeId = nomineeJoins[0].nominee_id;
+        
+        const { data: nomineeData, error: nomineeError } = await supabase
+          .from('nominees')
+          .select('id, name, img_url')
+          .eq('id', nomineeId)
+          .single();
+
+        if (nomineeError || !nomineeData) {
+          console.error('Error single nominee:', nomineeError);
+          setLoading(false);
+          return;
+        }
+
+        setWinners([nomineeData]);
+        setIsTie(false);
+        // *** MANTIENE 5s REDOBLE para ÚNICO nominada ***
+        setStage('counting'); 
+        lastCategoryIdRef.current = category.id;
+        setLoading(false);
+        return;
+      }
+
+      // *** MÚLTIPLES NOMINADOS: Contar votos normalmente ***
       const { data: votes, error: votesError } = await supabase
         .from('votes')
-      .select('nominee_id')
-      .eq('category_id', category.id);
+        .select('nominee_id')
+        .eq('category_id', category.id);
 
       if (votesError) {
         console.error('Error votes:', votesError);
@@ -78,21 +126,18 @@ const WinnerView = ({ category, onBackToNominees }) => {
       }));
 
       setWinners(withCounts);
-      lastCategoryIdRef.current = category.id; // marcamos la categoría como calculada
+      lastCategoryIdRef.current = category.id;
       setLoading(false);
     };
 
-    fetchWinner();
-  }, [category]); // se ejecuta cuando cambia la referencia de category
+    checkCategory();
+  }, [category]);
 
-  // 2) Sonidos + cambio de etapa, solo cuando ya hay winners nuevos
+  // 2) Redoble de 5s para TODOS los casos (único o múltiples)
   useEffect(() => {
-    if (loading) return;
-    if (!winners || winners.length === 0) return;
-
-    // etapa inicial: contando votos con redoble
-    setStage('counting');
-
+    if (loading || !winners || winners.length === 0) return;
+    
+    // Iniciar redoble inmediatamente
     const drum = new Audio(drumrollSfx);
     drum.play().catch(() => {});
 
@@ -100,7 +145,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
       const win = new Audio(winnerSfx);
       win.play().catch(() => {});
       setStage('revealed');
-    }, 5000); // 5s de redoble
+    }, 5500); // 5s de redoble SIEMPRE
 
     return () => clearTimeout(t);
   }, [loading, winners]);
@@ -116,7 +161,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
   if (loading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-2xl">Calculando votos...</p>
+        <p className="text-2xl">Cargando...</p>
       </div>
     );
   }
@@ -124,7 +169,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
   if (!winners || winners.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="text-2xl">Aún no hay votos para esta categoría.</p>
+        <p className="text-2xl">No hay nominados para esta categoría.</p>
       </div>
     );
   }
@@ -139,9 +184,13 @@ const WinnerView = ({ category, onBackToNominees }) => {
         {stage === 'revealed' && (
           <div className="flex flex-col items-center justify-center mt-8 text-center animate-fadeIn mb-16">
             
-            {/* ÚNICO MENSAJE: depende de si hay empate */}
+            {/* TÍTULO según el caso */}
             <div className="mb-10">
-              {isTie ? (
+              {onlyOneNominee ? (
+                <p className="text-4xl md:text-6xl font-extrabold text-yellow-300 drop-shadow-[0_0_25px_rgba(250,204,21,0.9)] animate-bounce">
+                  🎉 ¡Y EL GANADOR ES! 🎉
+                </p>
+              ) : isTie ? (
                 <p className="text-4xl md:text-6xl font-extrabold text-yellow-300 drop-shadow-[0_0_20px_rgba(56,189,248,0.9)] mb-10">
                   ¡ES UN EMPATE!
                 </p>
@@ -156,7 +205,7 @@ const WinnerView = ({ category, onBackToNominees }) => {
             <div className="flex flex-wrap justify-center gap-12">
               {winners.map((winner) => {
                 const percentage =
-                  totalVotes > 0
+                  totalVotes > 0 && !onlyOneNominee
                     ? Math.round((winner.votes / totalVotes) * 100)
                     : 0;
 
@@ -169,16 +218,18 @@ const WinnerView = ({ category, onBackToNominees }) => {
                       <img
                         src={winner.img_url}
                         alt={winner.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full"
                       />
                     </div>
 
                     <h2 className="text-3xl md:text-5xl font-extrabold text-white drop-shadow-lg font-sans">
                       {winner.name}
                     </h2>
-                    <div className="mt-3 text-xl md:text-2xl text-yellow-100 font-semibold font-sans">
-                      {winner.votes} votos — {percentage}%
-                    </div>
+                    {!onlyOneNominee && (
+                      <div className="mt-3 text-xl md:text-2xl text-yellow-100 font-semibold font-sans">
+                        {winner.votes} votos — {percentage}%
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -186,15 +237,13 @@ const WinnerView = ({ category, onBackToNominees }) => {
           </div>
         )}
 
-
-
       </div>
 
-      {/* Overlay central durante el redoble */}
+      {/* Overlay central durante el redoble (TODOS los casos) */}
       {stage === 'counting' && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <span className="text-4xl md:text-5xl font-extrabold text-yellow-200/80 drop-shadow animate-pulse">
-            Contando los votos...
+            {onlyOneNominee ? '¡Preparando al ganador!' : 'Contando los votos...'}
           </span>
         </div>
       )}
